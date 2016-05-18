@@ -1,0 +1,55 @@
+classdef #NAME# < spk.tune.Base
+% spk.tune.#NAME#
+%
+% Description:
+%
+% Syntax: c = spk.tune.#NAME#(ifile,<options>)
+%
+% In:
+%
+% Out:
+%
+%
+% Methods:
+%
+% See Also:
+%       spk.tune.Base
+%
+% Updated: 2015-09-29
+% Scottie Alexander
+%
+% Please report bugs to: scottiealexander11@gmail.com
+
+%PUBLIC PROPERTIES------------------------------------------------------------%
+properties
+end
+%PUBLIC PROPERTIES------------------------------------------------------------%
+
+%PUBLIC METHODS---------------------------------------------------------------%
+methods
+    %-------------------------------------------------------------------------%
+    function self = #NAME#(ifile,varargin)
+        self = self@spk.tune.Base(ifile,varargin{:});
+    end
+    %-------------------------------------------------------------------------%
+end
+%PUBLIC METHODS---------------------------------------------------------------%
+
+%STATIC METHODS---------------------------------------------------------------%
+methods (Static=true)
+    %-------------------------------------------------------------------------%
+    function [p0,lb,ub] = Parameters(x,y)
+
+    end
+    %-------------------------------------------------------------------------%
+    function y = Fit(p,x)
+
+    end
+    %-------------------------------------------------------------------------%
+    function ifo = FormatOutput(ifo)
+        ifo = ifo;
+    end
+    %-------------------------------------------------------------------------%
+end
+%STATIC METHODS---------------------------------------------------------------%
+end

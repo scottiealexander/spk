@@ -1,0 +1,15 @@
+Description:
+    this directory contains mex files (Matlab EXecutable) for reading Spike2 .smr files for Linux, Windows, and Mac platforms as well as corresponding help files (with .m extension)
+
+Extensions:
+    mexw64: 64 bit Windows
+    mexa64: 64 bit Linux
+    mexmaci64: 64 bit Mac OSX
+    m: help files for corresponding mex functions
+
+Build environments:
+    Windows: 64 bit Win 7, Matlab r2013a
+    Linux: 64 bin lubuntu 14.04, Matlab r2013a
+    Mac: 64 bit OSX El Cap (10.11), Matlab r2013a
+
+For more information see help (.m) files
