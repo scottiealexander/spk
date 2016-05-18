@@ -100,6 +100,12 @@ methods
 
         tf = self.GetTF(self.ifile);
 
+        % this is temporal frequency tuning, thus each trial need a specifc tf
+        % for caclulating the f1
+        if numel(tf) > 1
+           tf = x;
+        end
+
         [f0,f0e,f1,f1e] = self.F1XFM(y,tf,dur,self.bin_size);
         f0_raw = f0;
         f1_raw = f1;
@@ -158,8 +164,11 @@ methods
     end
     %-------------------------------------------------------------------------%
     function p = RunFit(self,x,y)
-        os = optimoptions('fmincon','Algorithm','active-set','Display','off');
         [p0,lb,ub] = self.Parameters(x,y);
+        os = optimoptions('fmincon',...
+            'Algorithm', 'trust-region-reflective' ,...
+            'Display'  , 'off'                      ...
+            );
         p = fmincon(@self.Objective,p0,[],[],[],[],lb,ub,[],os,x,y);
     end
     %-------------------------------------------------------------------------%
@@ -179,7 +188,7 @@ methods
             if ~iscell(tf)
                 tf = num2cell(tf);
             end
-            [f1,f1e] = cellfun(@(x,y) self.ME(abs(x*exp(-1i*2*pi*y*t))),y,freq,'uni',false);
+            [f1,f1e] = cellfun(@(x,y) self.ME(abs(x*exp(-1i*2*pi*y*t))),y,tf,'uni',false);
         end
         [f0,f0e,f1,f1e] = varfun(@self.Fill,f0,f0e,f1,f1e);
     end
