@@ -164,12 +164,12 @@ methods
     end
     %-------------------------------------------------------------------------%
     function p = RunFit(self,x,y)
+        os = optimoptions('lsqcurvefit','Display','off');
         [p0,lb,ub] = self.Parameters(x,y);
-        os = optimoptions('fmincon',...
-            'Algorithm', 'trust-region-reflective' ,...
-            'Display'  , 'off'                      ...
-            );
-        p = fmincon(@self.Objective,p0,[],[],[],[],lb,ub,[],os,x,y);
+        p = lsqcurvefit(@(p,x,varargin) self.Objective(p,x),p0,x,y,lb,ub,os);
+        %         os = optimoptions('fmincon','Algorithm','active-set','Display','off');
+        %         os = optimset('LargeScale','off','Display','off');
+        %         p = fmincon(@self.Objective,p0,[],[],[],[],lb,ub);
     end
     %-------------------------------------------------------------------------%
     function [f0,f0e,f1,f1e] = F1XFM(self,y,tf,dur,bin_size)
@@ -212,14 +212,10 @@ end
 %PRIVATE METHODS--------------------------------------------------------------%
 methods
     %-------------------------------------------------------------------------%
-    function e = Objective(self,p,x,y)
+    function yf = Objective(self,p,x)
         yf = self.Fit(p,x);
         if any(isnan(yf))
             error('NANs found in Fit function output\n');
-        end
-        e = self.Error(y,yf);
-        if isnan(e)
-            error('NANs found in objective/error function output\n');
         end
     end
     %-------------------------------------------------------------------------%
