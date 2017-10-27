@@ -49,6 +49,7 @@ properties
     ninterp = 200;
     normalize;
     use_error;
+    stim_file;
 end
 %PUBLIC PROPERTIES------------------------------------------------------------%
 
@@ -65,6 +66,7 @@ methods
         opt = ParseOpts(varargin,...
             'channel'   , []     ,...
             'ts'        , []     ,...
+            'stim_file' , ''     ,...
             'bin_size'  , .001   ,...
             'log'       , false  ,...
             'normalize' , true   ,...
@@ -85,7 +87,7 @@ methods
             self.ts = spk.Preprocess(ifile,self.channel);
         end
 
-        [evt,label,dur] = spk.events.Filter(self.ifile);
+        [evt,label,dur] = spk.events.Filter(self.ifile, self.stim_file);
 
         % this allows child classes an opportunity to conver labels as needed,
         % if they don't override the ConvertLabels method, nothing happens
@@ -123,6 +125,14 @@ methods
 
         sf0.data.raw = f0_raw;
         sf1.data.raw = f1_raw;
+
+        sf1.data.evt = evt;
+
+        sf1.data.spk_ts = spk_ts;
+        sf1.data.evt_ts = evt_ts;
+        sf1.data.labels = labels;
+        sf1.data.bin = bin;
+        sf1.data.dur = duration;
     end
     %-------------------------------------------------------------------------%
     function ifo = Run(self,x,y,varargin)

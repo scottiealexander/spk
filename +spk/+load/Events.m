@@ -36,13 +36,14 @@ opt = ParseOpts(varargin,...
     );
 
 chan = spk.load.ChanLabels(ifile);
-kchan = spk.load.Label2Index(ifile, opt.name);
+idx = spk.load.Label2Index(ifile, opt.name);
+kchan = find([chan(:).index] == idx);
 
-if ~isempty(kchan)
+if ~isempty(idx)
 
-    ifo = smr_read_channel(ifile, chan(kchan(1)).index);
-    
-    switch chan(kchan(1)).type
+    ifo = smr_read_channel(ifile, idx(1));
+
+    switch chan(kchan).type
     case {2,3,5,8}
         ts = ifo.timestamps;
 
@@ -65,7 +66,7 @@ if ~isempty(kchan)
     case 4
         ts = ifo;
         val = [];
-        mrk = [];  
+        mrk = [];
 
     otherwise
         error('Given channel in not an event channel [%d]',chan(kchan(1)).type);

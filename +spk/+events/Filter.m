@@ -1,13 +1,15 @@
-function [evt,label,dur] = Filter(ifile)
+function [evt,label,dur] = Filter(ifile, varargin)
 % spk.events.Filter
 %
 % Description: attempts to automatically remove spurious events from event
 %              timestamps
 %
-% Syntax: [evt,label,dur] = spk.events.Filter(ifile)
+% Syntax: [evt,label,dur] = spk.events.Filter(ifile, [stimfile])
 %
 % In:
 %       ifile - a .smr file from which to read and filter events
+%       [stimfile] - the path to a .txt. stimulus file or the string 'auto'
+%                    to construct the path from the smr file
 %
 % Out:
 %       evt   - a vector of event start (i.e. stim-on) timestamps
@@ -18,6 +20,12 @@ function [evt,label,dur] = Filter(ifile)
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
+
+if ~isempty(varargin) && ischar(varargin{1})
+    stim_file = varargin{1};
+else
+    stim_file = '';
+end
 
 pm = spk.ParameterMap(ifile);
 
@@ -38,26 +46,47 @@ else
         %remove first column
         label = label(:,2);
     else
-        error('Labels from .par file are poorly formatted!');    
+        error('Labels from .par file are poorly formatted!');
     end
 end
 
 if strcmpi(pm.fmt,'daniel')
     dur = pm.Get('signal duration');
 else
-    dur = pm.Get('stimulus duration');    
+    dur = pm.Get('stimulus duration');
 end
 
 if strcmpi(pm.evt_channel,'stim')
-    %NOTE: this is a hack and should NOT be relied on in the long term
-    [evt,txt] = spk.load.Events(ifile,'name','untitled');
-    buse = cellfun(@(x) strcmp(x,'+'),txt);
-    evt = evt(find(buse)-1);
-    nevt = numel(evt);
-    if numel(label) > nevt
-        label = label(1:nevt);
-        msg = 'Inconsistency detected in event time stamps, attempting to continue';
-        warning('Filter:Events',msg);
+
+    if strcmpi(stim_file, 'auto')
+        stim_file = regexprep(ifile, 'smr','txt');
+    end
+    if ~isempty(stim_file) && (exist(stim_file, 'file') == 2)
+        % we've found an extracted .txt stim file, so let's just use  that
+        stim = load(stim_file);
+        label = stim(:,1);
+        evt = stim(:,2);
+    else
+        % get the time of the requested stim-on events for successful trials
+        % (successful trials are followed by a '+')
+        [evt,txt] = spk.load.Events(ifile,'name','untitled');
+        buse = cellfun(@(x) strcmp(x,'+'),txt);
+        evt = evt(find(buse)-1);
+        nevt = numel(evt);
+
+        % find the event in the stim channel that is closest in time to the
+        % requested stim-on events
+        stim = spk.load.Events(ifile, 'name', 'stim');
+        for k = 1:numel(evt)
+            [~, kmin] = min(abs(stim - evt(k)));
+            evt(k) = stim(kmin);
+        end
+
+        if numel(label) > nevt
+            label = label(1:nevt);
+            msg = 'Inconsistency detected in event time stamps, attempting to continue';
+            warning('Filter:Events',msg);
+        end
     end
     return;
 else
@@ -90,7 +119,7 @@ else
         %most / all events are of length dur: events mark on and offset of stim
         %and blank_dur == stim_dur
         blank_dur = dur;
-        buse = bdur;        
+        buse = bdur;
         buse(2:2:end) = false;
     elseif n > .4 && n < .6
         %~50% of events are of length dur: events mark on and offset of stim
